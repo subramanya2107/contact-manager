@@ -1,5 +1,5 @@
 # Skeleton project for Swagger
- sudo npm install swagger -g3
+ sudo npm install swagger -g
  
  
  cd to project
