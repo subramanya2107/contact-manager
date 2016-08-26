@@ -11,4 +11,4 @@
  swagger project start -m // to start in mock mode
  
  
- url= locahost:1001o/docs
+ url= locahost:10010/docs
