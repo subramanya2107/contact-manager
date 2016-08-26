@@ -1,0 +1,201 @@
+swagger: "2.0"
+info:
+  version: "0.0.1"
+  title: Hello World App
+# during dev, should point to your local machine
+host: localhost:10010
+# basePath prefixes all resource paths 
+basePath: /
+# 
+schemes:
+  # tip: remove http to make production-grade
+  - http
+  - https
+# format of bodies a client can send (Content-Type)
+consumes:
+  - application/json
+# format of the responses to the client (Accepts)
+produces:
+  - application/json
+paths:
+  /user/register:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: hello_world
+    post:
+      description: create new user
+      # used as the method name of the controller
+      operationId: registerUser
+      parameters:
+        - name: register
+          in: body
+          description: The name of the person to whom to say hello
+          required: true
+          schema:
+            $ref: "#/definitions/RegisterRequest"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/RegistrationResponse"
+        "409":
+          description: user name exists
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+  /user/login:
+    # binds a127 app logic to a route
+    x-swagger-router-controller: hello_world
+    post:
+      description: login user
+      # used as the method name of the controller
+      operationId: loginUser
+      parameters:
+        - name: login
+          in: body
+          description: The name of the person to whom to say hello
+          required: true
+          schema:
+            $ref: "#/definitions/LoginRequest"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/RegistrationResponse"
+        "404":
+          description: user name or password is wrong
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        # responses may fall through to errors
+        default:
+          description: Error
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+            
+  /user/data:
+      x-swagger-router-controller: hello_world
+      post:
+        description: save or update data
+        # used as the method name of the controller
+        operationId: saveUserData
+        parameters:
+          - name: accessToken
+            in: header
+            description: token got during login
+            required: true
+            type: string
+          - name: userData
+            in: body
+            description: The name of the person to whom to say hello
+            required: true
+            schema:
+              $ref: "#/definitions/UserDataSaveList"
+        responses:
+          "200":
+            description: Success
+            schema:
+              $ref: "#/definitions/RegistrationResponse"
+          "404":
+            description: user name or password is wrong
+            schema:
+              $ref: "#/definitions/ErrorResponse"
+          # responses may fall through to errors
+          default:
+            description: Error
+            schema:
+              $ref: "#/definitions/ErrorResponse"
+  /swagger:
+    x-swagger-pipe: swagger_raw
+# complex objects have schema definitions
+definitions:
+  RegisterRequest:
+    required:
+      - uname
+      - password
+      - fname
+      - lname
+    properties:
+      uname:
+        type: string
+      password:
+        type: string
+      fname:
+        type: string
+      lname:
+        type: string  
+  RegistrationResponse:
+    description: fname and lname of registered user will be sent as part of userData
+    required:
+      - accessToken
+      - refreshToken
+      - uniqueUUID
+      - uname
+      - userData
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string  
+      uniqueUUID:
+        type: string
+      uname:
+        type: string
+      userId:
+        type: integer
+      userData:
+        $ref: "#/definitions/UsersDataList"  
+  LoginRequest:
+    required:
+      - uname
+      - password
+    properties:
+      uname:
+        type: string
+      password:
+        type: string
+    
+  UsersDataList:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: used for update puspose
+        label:
+          type: string
+          description: this will act as key ex phNo,address,email,twitter or facebookid
+        data:
+          type: string
+        dataOption:
+          type: string
+          description: specifies what kind of data it is ex for phnumber work or personal migth be the options
+        userId:
+          type: integer
+          
+  UserDataSaveList:
+    type: array
+    items:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: used for update puspose
+        label:
+          type: string
+          description: this will act as key ex phNo,address,email,twitter or facebookid
+        data:
+          type: string
+        dataOption:
+          type: string
+          description: specifies what kind of data it is ex for phnumber work or personal migth be the options
+
+  ErrorResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string
