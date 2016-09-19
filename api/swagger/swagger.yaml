@@ -28,7 +28,7 @@ paths:
       parameters:
         - name: register
           in: body
-          description: The name of the person to whom to say hello
+          description: Registration data
           required: true
           schema:
             $ref: "#/definitions/RegisterRequest"
@@ -56,13 +56,13 @@ paths:
       parameters:
         - name: login
           in: body
-          description: The name of the person to whom to say hello
+          description: Login data
           required: true
           schema:
             $ref: "#/definitions/LoginRequest"
       responses:
         "200":
-          description: Success
+          description: loggedin user details
           schema:
             $ref: "#/definitions/RegistrationResponse"
         "404":
@@ -98,15 +98,105 @@ paths:
             description: Success
             schema:
               $ref: "#/definitions/RegistrationResponse"
-          "404":
-            description: user name or password is wrong
-            schema:
-              $ref: "#/definitions/ErrorResponse"
+         
           # responses may fall through to errors
           default:
             description: Error
             schema:
               $ref: "#/definitions/ErrorResponse"
+              
+  /user/data/sync:
+      x-swagger-router-controller: hello_world
+      get:
+        description: fetch data of loggedin userwhich are updated after lastSyncedTime
+        # used as the method name of the controller
+        operationId: getUserData
+        parameters:
+          - name: accessToken
+            in: header
+            description: token got during login
+            required: true
+            type: string
+          - name: lastSyncedTime
+            in: query
+            description: Last timestamp when this request was made,send 0 to fetch all the details
+            required: true
+            type: string  
+        responses:
+          "200":
+            description: Success
+            schema:
+              $ref: "#/definitions/UsersDataList"
+         
+          # responses may fall through to errors
+          default:
+            description: Error
+            schema:
+              $ref: "#/definitions/ErrorResponse"   
+              
+  /user/contacts/sync:
+      x-swagger-router-controller: hello_world
+      get:
+        description: Fetch all the contacts shared with user which are updated after lastSyncedTime
+        # used as the method name of the controller
+        operationId: getUsersContacts
+        parameters:
+          - name: accessToken
+            in: header
+            description: token got during login
+            required: true
+            type: string
+          - name: lastSyncedTime
+            in: query
+            description: Last timestamp when this request was made,send 0 to fetch all the details
+            required: true
+            type: string
+        responses:
+          "200":
+            description: Success
+            schema:
+              $ref: "#/definitions/UsersDataList"
+         
+          # responses may fall through to errors
+          default:
+            description: Error
+            schema:
+              $ref: "#/definitions/ErrorResponse"  
+  
+  /user/contacts/share:
+      x-swagger-router-controller: hello_world
+      post:
+        description: save or update data
+        # used as the method name of the controller
+        operationId: shareContact
+        parameters:
+          - name: accessToken
+            in: header
+            description: token got during login
+            required: true
+            type: string
+          - name: userData
+            in: body
+            description: The name of the person to whom to share contact with
+            required: true
+            schema:
+              $ref: "#/definitions/ShareContactRequest"
+        responses:
+          "200":
+            description: Success
+            schema:
+              $ref: "#/definitions/GeneralResponse"
+          "400":
+            description: bad request, this happens if user Y has blocked accepting request from loggedin user
+            schema:
+              $ref: "#/definitions/ErrorResponse"    
+         
+          # responses may fall through to errors
+          default:
+            description: Error
+            schema:
+              $ref: "#/definitions/ErrorResponse"
+              
   /swagger:
     x-swagger-pipe: swagger_raw
 # complex objects have schema definitions
@@ -177,13 +267,14 @@ definitions:
           type: integer
           
   UserDataSaveList:
+    description: used for updating user data
     type: array
     items:
       type: object
       properties:
         id:
           type: integer
-          description: used for update puspose
+          description: used for update puspose,if new entry then this parameter value will be 0
         label:
           type: string
           description: this will act as key ex phNo,address,email,twitter or facebookid
@@ -192,10 +283,27 @@ definitions:
         dataOption:
           type: string
           description: specifies what kind of data it is ex for phnumber work or personal migth be the options
-
+  ShareContactRequest:
+    required:
+      - uname
+    properties:
+      uname:
+        type: string
+        description: user name of contact to whom loggedin user want to share information 
+      dataFields:
+        description: list of fileds to be shared
+        type: array
+        items:
+          type: string
   ErrorResponse:
     required:
       - message
     properties:
       message:
         type: string
+  GeneralResponse:
+    required:
+      - message
+    properties:
+      message:
+        type: string      
